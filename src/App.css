@@ -72,6 +72,12 @@
 .box1 {
   padding: 20px;
 }
+.box1-title {
+  width: 100px;
+  margin-bottom: 10px;
+  background-color: rgb(228, 228, 228);
+}
+
 .box2 {
   display: flex;
   flex-direction: column;
@@ -79,25 +85,38 @@
   width: 40vw;
   justify-content: end;
 }
-.user-information {
-  margin-top: 20px;
-  height: 65vh;
+.box2-line{
+display: flex;
+    justify-content: space-between
 }
+.box2-title{
+    width: 150px;
+    margin-bottom: 10px;
+    background-color: rgb(228, 228, 228);
+}
+
+.user-information {
+  height: 65vh;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+}
+
 .user {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  padding-left: 10px;
+  padding-top: 2px;
 }
 .user-input {
   padding: 7px;
   width: 300px;
-  margin-right: 100px;
+  margin-right: 10px;
 }
 .user-select {
   padding: 7px;
   width: 318px;
-  margin-right: 100px;
+  margin-right: 10px;
 }
 
 /* 테이블 */
