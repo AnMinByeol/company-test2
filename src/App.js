@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import Exit from "./exit";
-=======
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
+
 
 function getRegionText(regionCd) {
   switch (regionCd) {
@@ -48,11 +46,9 @@ function App() {
   const [rowData, setRowData] = useState(null);
   const [shipmentPlan, setShipmentPlan] = useState(null);
   const [searchParams, setSearchParams] = useState({});
-<<<<<<< HEAD
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const navigate = useNavigate();
-=======
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
+
 
   const serverUrl = "http://133.186.221.46:8090/";
   const commonCodeApiEndpoint = "test/api/commonCode";
@@ -109,11 +105,7 @@ function App() {
       }
 
       const result = await response.json();
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
       if (result.code === "0" && Array.isArray(result.data)) {
         setRowData(result.data);
       } else {
@@ -141,8 +133,7 @@ function App() {
       updatedRowData[rowIndex].useYn === 1 ? 2 : 1;
     setRowData(updatedRowData);
   };
-<<<<<<< HEAD
-  
+
   const handleTableRowClick = async (customerId) => {
     try {
       // 클릭한 데이터의 ID를 기반으로 상세정보를 불러오는 API 호출
@@ -182,8 +173,7 @@ function App() {
       navigate('/exit');
     }
   };
-=======
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
+
 
   return (
     <div className="App">
@@ -198,10 +188,8 @@ function App() {
           <i
             className="fa-solid fa-right-from-bracket"
             style={{ marginLeft: "60px", cursor: "pointer" }}
-<<<<<<< HEAD
             onClick={handleExitClick}
-=======
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
+
           ></i>
         </div>
       </div>
@@ -322,13 +310,12 @@ function App() {
                   rowData.map((dataRow, rowIndex) => {
                     console.log("dataRow:", dataRow); // 여기에 콘솔 추가
                     return (
-<<<<<<< HEAD
+
                       <tr key={rowIndex}
                       onClick={() => handleTableRowClick(dataRow.custCd)}
                       style={{ cursor: "pointer" }}>
-=======
-                      <tr key={rowIndex}>
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
+
+
                         <td>{rowIndex + 1}</td>
                         <td>{dataRow.custCd}</td>
                         <td>{dataRow.custNm}</td>
@@ -366,7 +353,6 @@ function App() {
           </div>
           {/*고객사 상세정보 */}
           <div className="user-information">
-<<<<<<< HEAD
           {selectedCustomer && (
            <>
            <div className="user">고객사코드: {selectedCustomer.custCd}</div>
@@ -385,9 +371,6 @@ function App() {
             </>
               )}
             <div className="user" style={{marginTop:"2vh"}}>
-=======
-            <div className="user" style={{ marginTop: "35px" }}>
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
               고객사코드
               <input
                 type="text"
@@ -438,25 +421,15 @@ function App() {
               <div
                 style={{
                   border: "1px solid black",
-<<<<<<< HEAD
-=======
                   marginRight: "10vw",
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
                   padding: "7px",
                   width: "300px",
                   backgroundColor: "#ffff",
                   display: "flex",
-<<<<<<< HEAD
                   marginRight: "3vw"
                 }}
               >
                 <div style={{marginLeft:"50px", marginRight: "50px" }}>
-=======
-                  justifyContent: "space-between",
-                }}
-              >
-                <div style={{ marginLeft: "60px" }}>
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
                   <input
                     type="checkbox"
                     id="shipmentPlanCheckbox"
@@ -465,11 +438,7 @@ function App() {
                   />
                   <label htmlFor="shipmentPlanCheckbox">사용</label>
                 </div>
-<<<<<<< HEAD
                 <div>
-=======
-                <div style={{ marginRight: "60px" }}>
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
                   <input
                     type="checkbox"
                     id="noShipmentPlanCheckbox"
@@ -480,7 +449,6 @@ function App() {
                 </div>
               </div>
             </div>
-
             <div className="user">
               전화번호
               <input
@@ -557,7 +525,7 @@ function App() {
             </div>
           </div>
           </div>
-        </div>
+          </div>
   );
 }
 

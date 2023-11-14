@@ -18,8 +18,6 @@ const Exit = () => {
   );
 };
 
-<<<<<<< HEAD
 export default Exit;
-=======
-export default Exit;
->>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
+
+
