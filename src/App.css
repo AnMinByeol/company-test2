@@ -30,6 +30,7 @@
   background-color: white;
   cursor: pointer;
 }
+
 .third {
   display: flex;
   justify-content: space-between;
@@ -68,6 +69,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid black;
 }
 .box1 {
   padding: 20px;
@@ -75,9 +77,9 @@
 .box1-title {
   width: 100px;
   margin-bottom: 10px;
-  background-color: rgb(228, 228, 228);
+  background-color: rgb(219, 219, 219);
+  font-weight: bolder;
 }
-
 .box2 {
   display: flex;
   flex-direction: column;
@@ -85,14 +87,20 @@
   width: 40vw;
   justify-content: end;
 }
-.box2-line{
-display: flex;
-    justify-content: space-between
+.table-container {
+  max-height: 800px;
+  overflow-y: auto;
 }
-.box2-title{
-    width: 150px;
-    margin-bottom: 10px;
-    background-color: rgb(228, 228, 228);
+
+.box2-line {
+  display: flex;
+  justify-content: space-between;
+}
+.box2-title {
+  width: 150px;
+  margin-bottom: 10px;
+  background-color: rgb(219, 219, 219);
+  font-weight: bolder;
 }
 
 .user-information {
@@ -105,18 +113,18 @@ display: flex;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-left: 10px;
-  padding-top: 2px;
+  padding-left: 3vw;
+  padding-top: 20px;
 }
 .user-input {
   padding: 7px;
   width: 300px;
-  margin-right: 10px;
+  margin-right: 10vw;
 }
 .user-select {
   padding: 7px;
   width: 318px;
-  margin-right: 10px;
+  margin-right: 10vw;
 }
 
 /* 테이블 */
@@ -129,7 +137,7 @@ display: flex;
 
 .table-container th,
 .table-container td {
-  border: 1px solid #ddd;
+  border: 1px #ddd;
   padding: 8px;
   text-align: left;
 }

@@ -1,15 +1,48 @@
-import "./App.css";
 import React, { useState, useEffect } from "react";
+import "./App.css";
+
+function getRegionText(regionCd) {
+  switch (regionCd) {
+    case 1:
+      return "도내";
+    case 2:
+      return "도외";
+    case 3:
+      return "기타";
+    default:
+      return "";
+  }
+}
+
+function getCalText(calCd) {
+  switch (calCd) {
+    case 1:
+      return "고산농협";
+    case 2:
+      return "직접정산";
+    case 3:
+      return "기타";
+    default:
+      return "";
+  }
+}
+
+function getUseText(useYn) {
+  switch (useYn) {
+    case 1:
+      return "Y";
+    case 2:
+      return "N";
+    default:
+      return "";
+  }
+}
 
 function App() {
-  const [rowData, setRowData] = useState(null); 
-  const [commonCodeData, setCommonCodeData] = useState([]);
-  const [searchParams, setSearchParams] = useState({
-    custNm: "하나",
-    regionCd: null,
-    calCd: null,
-    useYn: null,
-  });
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [rowData, setRowData] = useState(null);
+  const [shipmentPlan, setShipmentPlan] = useState(null);
+  const [searchParams, setSearchParams] = useState({});
 
   const serverUrl = "http://133.186.221.46:8090/";
   const commonCodeApiEndpoint = "test/api/commonCode";
@@ -23,13 +56,13 @@ function App() {
     { headerName: "고객사명", field: "custNm" },
     { headerName: "지역", field: "regionCd" },
     { headerName: "정산방법", field: "calCd" },
-    { headerName: "사용여부", field: "shipmentYn" },
+    { headerName: "사용여부", field: "useYn" },
   ];
 
   useEffect(() => {
     console.log("Initial rowData state:", rowData);
   }, []);
-  
+
   const list = async () => {
     try {
       const response = await fetch(customerUrl, {
@@ -39,14 +72,14 @@ function App() {
         },
         body: JSON.stringify(searchParams),
       });
-  
+
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-  
+
       const result = await response.json();
-  
-      if (result.code === '0' && Array.isArray(result.data)) {
+
+      if (result.code === "0" && Array.isArray(result.data)) {
         setRowData(result.data);
       } else {
         console.error("Invalid data format. Expected an array.");
@@ -54,8 +87,8 @@ function App() {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };  
-  
+  };
+
   const handleSearchParamsChange = (field, value) => {
     setSearchParams((prevParams) => ({
       ...prevParams,
@@ -67,23 +100,70 @@ function App() {
     list();
   };
 
+  const handleUseYnCheckboxChange = (rowIndex) => {
+    const updatedRowData = [...rowData];
+    updatedRowData[rowIndex].useYn =
+      updatedRowData[rowIndex].useYn === 1 ? 2 : 1;
+    setRowData(updatedRowData);
+  };
+
   return (
     <div className="App">
       <div className="first">
         <div className="first-1">비즈위즈시스템</div>
         <div className="first-2">
-          <i className="fa-solid fa-circle-user" style={{ marginRight: "10px" }}></i>
+          <i
+            className="fa-solid fa-circle-user"
+            style={{ marginRight: "10px" }}
+          ></i>
           안민별
-          <i className="fa-solid fa-right-from-bracket" style={{ marginLeft: "60px" }}></i>
+          <i
+            className="fa-solid fa-right-from-bracket"
+            style={{ marginLeft: "60px", cursor: "pointer" }}
+          ></i>
         </div>
       </div>
       <div className="second">
-        <div className="second-1">
-          <i className="fa-solid fa-bars" style={{ marginRight: "30px" }}></i>
-          고객사 관리
+        <div
+          className="second-1"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div
+            className="dropdown"
+            style={{ display: "inline-block", position: "relative" }}
+          >
+            <i
+              className="fa-solid fa-bars"
+              style={{ marginRight: "30px", cursor: "pointer" }}
+              onClick={() => setDropdownOpen(!isDropdownOpen)}
+            ></i>
+            {isDropdownOpen && (
+              <div
+                className="dropdown-content"
+                style={{
+                  position: "absolute",
+                  backgroundColor: "#f1f1f1",
+                  minWidth: "160px",
+                  boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.2)",
+                  zIndex: 1,
+                }}
+              >
+                <p style={{ padding: "12px 16px", margin: 0 }}>고객사 관리</p>
+              </div>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ marginRight: "20px" }}>고객사 관리</div>
+          </div>
         </div>
         <div className="second-2">
-          <button className="second-button" onClick={handleSearchClick}>조회</button>
+          <button className="second-button" onClick={handleSearchClick}>
+            조회
+          </button>
           <button className="second-button">저장</button>
         </div>
       </div>
@@ -92,18 +172,28 @@ function App() {
           지역
           <select
             className="third-select"
-            onChange={(e) => handleSearchParamsChange("regionCd", e.target.value)}
+            value={searchParams?.regionCd || ""}
+            onChange={(e) =>
+              handleSearchParamsChange("regionCd", e.target.value)
+            }
           >
-            <option value="서울">서울</option>
+            <option value="">전체</option>
+            <option value="1">도내</option>
+            <option value="2">도외</option>
+            <option value="3">기타</option>
           </select>
         </div>
         <div className="third-box2">
           정산방법
           <select
             className="third-select"
+            value={searchParams.calCd || ""}
             onChange={(e) => handleSearchParamsChange("calCd", e.target.value)}
           >
-            <option value="농협">농협</option>
+            <option value="">전체</option>
+            <option value="1">고산농협</option>
+            <option value="2">직접정산</option>
+            <option value="3">기타</option>
           </select>
         </div>
         <div className="third-input">
@@ -119,9 +209,12 @@ function App() {
           사용여부
           <select
             className="third-select"
+            value={searchParams.useYn || ""}
             onChange={(e) => handleSearchParamsChange("useYn", e.target.value)}
           >
-            <option value="체크박스">전체</option>
+            <option value="">전체</option>
+            <option value="1">Y</option>
+            <option value="2">N</option>
           </select>
         </div>
       </div>
@@ -144,13 +237,29 @@ function App() {
                   </tr>
                 ) : (
                   // 아니면 데이터를 렌더링
-                  rowData.map((dataRow, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {columns.map((col) => (
-                        <td key={col.field}>{dataRow[col.field]}</td>
-                      ))}
-                    </tr>
-                  ))
+                  rowData.map((dataRow, rowIndex) => {
+                    console.log("dataRow:", dataRow); // 여기에 콘솔 추가
+                    return (
+                      <tr key={rowIndex}>
+                        <td>{rowIndex + 1}</td>
+                        <td>{dataRow.custCd}</td>
+                        <td>{dataRow.custNm}</td>
+                        <td>{getRegionText(parseInt(dataRow.regionCd))}</td>
+                        <td>{getCalText(parseInt(dataRow.calCd))}</td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            id={`useYnCheckbox_${rowIndex}`}
+                            checked={parseInt(dataRow.useYn) === 1}
+                            onChange={() => handleUseYnCheckboxChange(rowIndex)}
+                          />
+                          <label htmlFor={`useYnCheckbox_${rowIndex}`}>
+                            {getUseText(parseInt(dataRow.useYn))}
+                          </label>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -160,13 +269,16 @@ function App() {
           <div className="box2-line">
             <div className="box2-title">고객사 상세정보</div>
             <div>
-              <i className="fa-solid fa-plus" style={{ marginRight: "20px" }}></i>
+              <i
+                className="fa-solid fa-plus"
+                style={{ marginRight: "20px" }}
+              ></i>
               <i className="fa-regular fa-floppy-disk"></i>
             </div>
           </div>
           {/*고객사 상세정보 */}
           <div className="user-information">
-            <div className="user">
+            <div className="user" style={{ marginTop: "35px" }}>
               고객사코드
               <input
                 type="text"
@@ -184,24 +296,68 @@ function App() {
             </div>
             <div className="user">
               지역
-              <select className="user-select">
-                <option value="체크박스">전체</option>
+              <select
+                className="user-select"
+                value={searchParams.regionCd || ""}
+                onChange={(e) =>
+                  handleSearchParamsChange("regionCd", e.target.value)
+                }
+              >
+                <option value="">전체</option>
+                <option value="1">도내</option>
+                <option value="2">도외</option>
+                <option value="3">기타</option>
               </select>
             </div>
             <div className="user">
               정산방법
-              <select className="user-select">
-                <option value="체크박스">전체</option>
+              <select
+                className="user-select"
+                value={searchParams.calCd || ""}
+                onChange={(e) =>
+                  handleSearchParamsChange("calCd", e.target.value)
+                }
+              >
+                <option value="">전체</option>
+                <option value="1">고산농협</option>
+                <option value="2">직접정산</option>
+                <option value="3">기타</option>
               </select>
             </div>
             <div className="user">
               출하계획
-              <input
-                type="text"
-                placeholder="고객사명 입력"
-                className="user-input"
-              />
+              <div
+                style={{
+                  border: "1px solid black",
+                  marginRight: "10vw",
+                  padding: "7px",
+                  width: "300px",
+                  backgroundColor: "#ffff",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ marginLeft: "60px" }}>
+                  <input
+                    type="checkbox"
+                    id="shipmentPlanCheckbox"
+                    checked={shipmentPlan}
+                    onChange={(e) => setShipmentPlan(e.target.checked)}
+                  />
+                  <label htmlFor="shipmentPlanCheckbox">사용</label>
+                </div>
+                <div style={{ marginRight: "60px" }}>
+                  <input
+                    type="checkbox"
+                    id="noShipmentPlanCheckbox"
+                    checked={shipmentPlan === false}
+                    onChange={(e) => setShipmentPlan(!e.target.checked)}
+                  />
+                  <label htmlFor="noShipmentPlanCheckbox">미사용</label>
+                </div>
+              </div>
             </div>
+
             <div className="user">
               전화번호
               <input
@@ -231,7 +387,7 @@ function App() {
                 style={{
                   position: "absolute",
                   cursor: "pointer",
-                  right: "230px",
+                  right: "16vw",
                 }}
               ></i>
             </div>
