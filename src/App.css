@@ -87,12 +87,24 @@ App {
   width: 40vw;
   justify-content: end;
 }
+<<<<<<< HEAD
 
 .box2-line {
   display: flex;
   justify-content: space-between;
 }
 
+=======
+.table-container {
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.box2-line {
+  display: flex;
+  justify-content: space-between;
+}
+>>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
 .box2-title {
   width: 150px;
   margin-bottom: 10px;
@@ -111,16 +123,28 @@ App {
   justify-content: space-between;
   align-items: center;
   padding-left: 3vw;
+<<<<<<< HEAD
+=======
+  padding-top: 20px;
+>>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
 }
 .user-input {
   padding: 7px;
   width: 300px;
+<<<<<<< HEAD
   margin-right: 3vw;
+=======
+  margin-right: 10vw;
+>>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
 }
 .user-select {
   padding: 7px;
   width: 318px;
+<<<<<<< HEAD
   margin-right: 3vw;
+=======
+  margin-right: 10vw;
+>>>>>>> 33f47c4f8b7a37c20745000768abae1b6f2b9f8e
 }
 
 /* 테이블 */
