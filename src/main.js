@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+// 지역 코드에 따른 텍스트 반환
 function getRegionText(regionCd) {
   switch (regionCd) {
     case 1:
@@ -14,6 +15,7 @@ function getRegionText(regionCd) {
   }
 }
 
+// 정산 방법 코드에 따른 텍스트 반환
 function getCalText(calCd) {
   switch (calCd) {
     case 1:
@@ -27,6 +29,7 @@ function getCalText(calCd) {
   }
 }
 
+// 사용 여부 코드에 따른 텍스트 반환
 function getUseText(useYn) {
   switch (useYn) {
     case "1":
@@ -39,6 +42,7 @@ function getUseText(useYn) {
 }
 
 function Main() {
+  // 상태 변수 정의
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [rowData, setRowData] = useState(null);
   const [shipmentPlan, setShipmentPlan] = useState(null);
@@ -46,16 +50,25 @@ function Main() {
   const [selectedCustomer, setSelectedCustomer] = useState();
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   const [selectedTdIndex, setSelectedTdIndex] = useState(null);
-
   const [isReady, setIsReady] = useState(false);
   const [check, setCheck] = useState(false);
 
+  const [newCustomerData, setNewCustomerData] = useState({
+  custCd: "",
+  custNm: "",
+  regionCd: "",
+  calCd: "",
+  useYn: "1",
+});
+
+  // API 엔드포인트 및 URL 정의
   const serverUrl = "http://133.186.221.46:8090/";
   const commonCodeApiEndpoint = "test/api/commonCode";
   const customerApiEndpoint = "test/api/search/customer";
   const commonCodeUrl = `${serverUrl}${commonCodeApiEndpoint}`;
   const customerUrl = `${serverUrl}${customerApiEndpoint}`;
 
+  // 테이블 컬럼 정의
   const columns = [
     { headerName: "번호", field: "number" },
     { headerName: "고객사코드", field: "custCd" },
@@ -65,6 +78,36 @@ function Main() {
     { headerName: "사용여부", field: "useYn" },
   ];
 
+// 데이터 조회 함수
+const fetchData = async () => {
+  try {
+    const [commonCodeResponse, customerResponse] = await Promise.all([
+      fetch(commonCodeUrl),
+      fetch(customerUrl),
+    ]);
+
+    if (!commonCodeResponse.ok || !customerResponse.ok) {
+      throw new Error("네트워크 응답이 올바르지 않습니다");
+    }
+
+    const [commonCodeResult, customerResult] = await Promise.all([
+      commonCodeResponse.json(),
+      customerResponse.json(),
+    ]);
+
+    if (commonCodeResult.code === "0" && Array.isArray(commonCodeResult.data)) {
+      // 공통 코드 데이터 사용
+    }
+
+    if (customerResult.code === "0" && Array.isArray(customerResult.data)) {
+      setRowData(customerResult.data);
+    }
+  } catch (error) {
+    console.error("데이터를 가져오는 중 오류 발생:", error);
+  }
+};
+
+  // 데이터 조회 함수
   const list = async () => {
     try {
       // 필터링할 조건을 담을 변수
@@ -93,7 +136,7 @@ function Main() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(filters), // 수정된 부분
+        body: JSON.stringify(filters),
       });
 
       if (!response.ok) {
@@ -110,6 +153,7 @@ function Main() {
     }
   };
 
+  // 검색 파라미터 변경 핸들러
   const handleSearchParamsChange = (field, value) => {
     setSearchParams((prevParams) => ({
       ...prevParams,
@@ -117,25 +161,26 @@ function Main() {
     }));
   };
 
+  // 검색 버튼 클릭 핸들러
   const handleSearchClick = () => {
     list();
   };
 
+  // 사용 여부 체크박스 변경 핸들러
   const handleUseYnCheckboxChange = (rowIndex) => {
     const updatedRowData = [...rowData];
     const toggledState = updatedRowData[rowIndex].useYn === "1" ? "2" : "1";
     updatedRowData[rowIndex].useYn = toggledState;
     updatedRowData[rowIndex].__changed = true;
 
-    console.log("updatedRowData[rowIndex]::", updatedRowData[rowIndex]);
     setRowData(updatedRowData);
   };
 
+  // 테이블 행 클릭 핸들러
   const handleTableRowClick = async (custCd) => {
     try {
-      // 클릭한 데이터의 ID를 기반으로 상세정보를 불러오는 API 호출
       const detailUrl = `${serverUrl}test/api/search/customer/detail`;
-      const requestBody = { custCd: custCd }; // POST 요청의 경우 body에 데이터를 넣어 전달
+      const requestBody = { custCd: custCd };
 
       const response = await fetch(detailUrl, {
         method: "POST",
@@ -144,14 +189,14 @@ function Main() {
         },
         body: JSON.stringify(requestBody),
       });
+
       if (!response.ok) {
         throw new Error("네트워크 응답이 올바르지 않습니다");
       }
+
       const result = await response.json();
 
       if (result.code === "0" && result.data) {
-        // 성공적으로 데이터를 불러왔을 때 상세정보 갱신
-        console.log("result.data", result.data);
         setSelectedCustomer(result.data);
       }
     } catch (error) {
@@ -159,6 +204,7 @@ function Main() {
     }
   };
 
+  // 체크박스 상태 저장 함수
   const saveCheckboxState = async (custCd, useYn) => {
     try {
       const saveUrl = `${serverUrl}test/api/save/custUseYn`;
@@ -167,7 +213,6 @@ function Main() {
         data: [],
       };
 
-      console.log("rowData::::", rowData);
       const saveData = rowData
         .filter((row) => row.__changed)
         .map((row) => {
@@ -179,11 +224,7 @@ function Main() {
           return row;
         });
 
-      console.log("saveData:::", saveData);
-
       requestBody.data = saveData;
-
-      console.log("requestBody:::", requestBody);
 
       const response = await fetch(saveUrl, {
         method: "POST",
@@ -200,7 +241,6 @@ function Main() {
       const result = await response.json();
 
       if (result.code === "0") {
-        console.log("체크박스 상태가 성공적으로 저장되었습니다.");
         list();
       }
     } catch (error) {
@@ -208,6 +248,53 @@ function Main() {
     }
   };
 
+  // "추가" 아이콘을 클릭했을 때 실행되는 함수
+  const handleAddClick = () => {
+    console.log("추가 버튼 클릭");
+    setNewCustomerData({
+      custCd: "", // 예시로 초기값을 비움
+      custNm: "",
+      regionCd: "",
+      calCd: "",
+      useYn: "1", // 예시로 기본값을 "Y"로 설정
+      // 다른 필요한 속성들도 추가할 수 있음
+    });
+  };
+
+  // "저장" 버튼 클릭 시 실행되는 함수
+  const handleSaveNewCustomer = async (saveType) => {
+    console.log("저장 버튼 클릭");
+    try {
+      const saveUrl = `${serverUrl}test/api/save/customer`;
+
+      const requestBody = {
+        data: [{ ...newCustomerData, SAVE_TYPE: 1 }], // SAVE_TYPE을 1로 설정하여 신규 등록임을 서버에 알림
+      };
+
+      const response = await fetch(saveUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error("네트워크 응답이 올바르지 않습니다");
+      }
+
+      const result = await response.json();
+
+      if (result.code === "0") {
+        console.log("고객사가 성공적으로 추가되었습니다.");
+        list(); // 테이블 갱신
+      }
+    } catch (error) {
+      console.error("고객사 추가 중 오류 발생:", error);
+    }
+  };
+
+  // 종료 버튼 클릭 핸들러
   const handleExitClick = () => {
     if (window.confirm("정말로 종료하시겠습니까?")) {
       window.close();
@@ -216,6 +303,7 @@ function Main() {
 
   return (
     <div className="App">
+      {/* 상단 바 */}
       <div className="first">
         <div className="first-1">비즈위즈시스템</div>
         <div className="first-2">
@@ -231,6 +319,8 @@ function Main() {
           ></i>
         </div>
       </div>
+
+      {/* 검색 및 조회 영역 */}
       <div className="second">
         <div
           className="second-1"
@@ -240,6 +330,7 @@ function Main() {
             alignItems: "center",
           }}
         >
+          {/* 드롭다운 메뉴 */}
           <div
             className="dropdown"
             style={{ display: "inline-block", position: "relative" }}
@@ -264,10 +355,12 @@ function Main() {
               </div>
             )}
           </div>
+          {/* 고객사 관리 제목 */}
           <div style={{ display: "flex", alignItems: "center" }}>
             <div style={{ marginRight: "20px" }}>고객사 관리</div>
           </div>
         </div>
+        {/* 조회 버튼 및 저장 버튼 */}
         <div className="second-2">
           <button className="second-button" onClick={handleSearchClick}>
             조회
@@ -287,6 +380,8 @@ function Main() {
           </button>
         </div>
       </div>
+
+      {/* 검색 조건 입력 영역 */}
       <div className="third">
         <div className="third-box1">
           지역
@@ -338,7 +433,10 @@ function Main() {
           </select>
         </div>
       </div>
+
+      {/* 테이블 및 상세정보 영역 */}
       <div className="boxes">
+        {/* 테이블 */}
         <div className="box1">
           <div className="box1-title">고객사 목록</div>
           <div>
@@ -351,12 +449,11 @@ function Main() {
                 </tr>
               </thead>
               <tbody style={{ height: "60vh", border: "1px solid gray" }}>
-                {rowData === null ? ( // rowData가 null이면 빈 테이블을 보여줌
+                {rowData === null ? (
                   <tr>
                     <td colSpan={columns.length}>데이터가 없습니다.</td>
                   </tr>
                 ) : (
-                  // 아니면 데이터를 렌더링
                   rowData.map((dataRow, rowIndex) => {
                     return (
                       <tr
@@ -394,13 +491,14 @@ function Main() {
             <div>
               <i
                 className="fa-solid fa-plus"
-                style={{ marginRight: "20px" }}
+                style={{ marginRight: "20px", cursor: "pointer" }}
+                onClick={handleAddClick}
               ></i>
-              <i className="fa-regular fa-floppy-disk"></i>
+              <i className="fa-regular fa-floppy-disk" style={{ cursor: "pointer" }} onClick={handleSaveNewCustomer}></i>
             </div>
           </div>
           {/*고객사 상세정보 */}
-          <div className="user-information">
+          <div className="user-information" >
             {
               <>
                 <div className="user" style={{ marginTop: "2vh" }}>
@@ -408,7 +506,9 @@ function Main() {
                   <input
                     type="text"
                     className="user-input"
+                    backgroundColor= "#FFCCCC"
                     value={selectedCustomer ? selectedCustomer.custCd : null}
+                    readOnly // 수정 불가능하도록 설정
                   />
                 </div>
                 <div className="user">
@@ -417,7 +517,7 @@ function Main() {
                     type="text"
                     placeholder="고객사명 입력"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.regionCd : null}
+                    value={selectedCustomer ? selectedCustomer.custNm : null}
                   />
                 </div>
                 <div className="user">
@@ -500,8 +600,11 @@ function Main() {
                 <div className="user">
                   전화번호
                   <input
-                    type="text"
-                    placeholder="고객사명 입력"
+                    type="tel" // 숫자 전용 입력란으로 설정
+                    placeholder="전화번호 입력 (예: 010-1234-5678)"
+                    required
+                    pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
+                    maxlength="13"
                     className="user-input"
                     value={selectedCustomer ? selectedCustomer.telNo : null}
                   />
@@ -509,8 +612,8 @@ function Main() {
                 <div className="user">
                   팩스번호
                   <input
-                    type="text"
-                    placeholder="고객사명 입력"
+                    type="tel"
+                    placeholder="팩스번호 입력"
                     className="user-input"
                     value={selectedCustomer ? selectedCustomer.faxNo : null}
                   />
@@ -518,9 +621,10 @@ function Main() {
                 <div className="user">
                   우편번호
                   <input
-                    type="text"
-                    placeholder="고객사명 입력"
+                    type="tel"
+                    placeholder="우편번호 입력"
                     className="user-input"
+                    maxlength="5"
                     style={{ position: "relative" }}
                     value={selectedCustomer ? selectedCustomer.postNo : null}
                   />
@@ -537,7 +641,7 @@ function Main() {
                   기본주소
                   <input
                     type="text"
-                    placeholder="고객사명 입력"
+                    placeholder="기본주소 입력"
                     className="user-input"
                     value={selectedCustomer ? selectedCustomer.addStd : null}
                   />
@@ -546,7 +650,7 @@ function Main() {
                   상세주소
                   <input
                     type="text"
-                    placeholder="고객사명 입력"
+                    placeholder="상세주소 입력"
                     className="user-input"
                     value={selectedCustomer ? selectedCustomer.addDtl : null}
                   />
@@ -555,7 +659,7 @@ function Main() {
                   담당자
                   <input
                     type="text"
-                    placeholder="고객사명 입력"
+                    placeholder="담당자 성함 입력"
                     className="user-input"
                     value={selectedCustomer ? selectedCustomer.manNm : null}
                   />
@@ -563,9 +667,11 @@ function Main() {
                 <div className="user">
                   담당자연락처
                   <input
-                    type="text"
-                    placeholder="고객사명 입력"
+                    type="tel"
+                    placeholder="담당자 연락처 입력(예: 010-1234-5678)"
                     className="user-input"
+                    pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
+                    maxlength="13"
                     value={selectedCustomer ? selectedCustomer.manTelNo : null}
                   />
                 </div>
@@ -573,7 +679,7 @@ function Main() {
                   계산서수취메일
                   <input
                     type="text"
-                    placeholder="고객사명 입력"
+                    placeholder="계산서수취메일 입력"
                     className="user-input"
                     value={
                       selectedCustomer ? selectedCustomer.invoiceMail : null
