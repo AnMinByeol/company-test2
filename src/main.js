@@ -497,6 +497,12 @@ function Main() {
     }
   };
 
+  const formControl = (event) => {
+    event.preventDefault();
+
+    console.log("event:::", event);
+  };
+
   return (
     <div className="App">
       {/* 상단 바 */}
@@ -686,265 +692,273 @@ function Main() {
           </div>
         </div>
         <div className="box2">
-          <div className="box2-line">
-            <div className="box2-title">고객사 상세정보</div>
-            <div>
-              <i
-                className="fa-solid fa-plus"
-                style={{ marginRight: "20px", cursor: "pointer" }}
-                onClick={handleAdd}
-              ></i>
-              <i
-                className="fa-regular fa-floppy-disk"
-                style={{ cursor: "pointer" }}
-                onClick={handleCorrection}
-              ></i>
+          <form
+            // action={`${serverUrl}test/api/save/customer`}
+            // method="POST"
+            // name="formTagData"
+            onSubmit={formControl}
+          >
+            <div className="box2-line">
+              <div className="box2-title">고객사 상세정보</div>
+              <div>
+                <i
+                  className="fa-solid fa-plus"
+                  style={{ marginRight: "20px", cursor: "pointer" }}
+                  onClick={handleAdd}
+                ></i>
+                <i
+                  className="fa-regular fa-floppy-disk"
+                  style={{ cursor: "pointer" }}
+                  onClick={handleCorrection}
+                ></i>
+              </div>
             </div>
-          </div>
-          {/*고객사 상세정보 */}
-          <div className="user-information">
-            {
-              <>
-                <div className="user" style={{ marginTop: "2vh" }}>
-                  고객사코드
-                  <input
-                    type="text"
-                    className="user-input"
-                    backgroundcolor="#FFCCCC"
-                    value={
-                      selectedCustomer ? selectedCustomer.custCd : undefined
-                    }
-                    readOnly // 수정 불가능하도록 설정
-                    name="custCd"
-                  />
-                </div>
-                <div className="user">
-                  고객사명
-                  <input
-                    type="text"
-                    name="custNm"
-                    placeholder="고객사명 입력"
-                    className="user-input"
-                    value={
-                      selectedCustomer ? selectedCustomer.custNm : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  지역
-                  <select
-                    className="user-select"
-                    name="regionCd"
-                    value={userInformation.regionCd}
-                    onChange={(e) =>
-                      handleUserInformationChange("regionCd", e.target.value)
-                    }
-                    required
-                  >
-                    {regionCd &&
-                      regionCd.map((col) => (
-                        <option value={col.typeCd} key={col.typeCd}>
-                          {col.typeNm}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="user">
-                  정산방법
-                  <select
-                    name="calCd"
-                    className="user-select"
-                    value={
-                      selectedCustomer ? selectedCustomer.calCd : undefined
-                    }
-                    onChange={(e) =>
-                      handleUserInformationChange("calCd", e.target.value)
-                    }
-                    required
-                  >
-                    {calCd &&
-                      calCd.map((col) => (
-                        <option value={col.typeCd} key={col.typeCd}>
-                          {col.typeNm}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="user">
-                  출하계획
-                  <div
-                    style={{
-                      border: "1px solid black",
-                      padding: "7px",
-                      width: "300px",
-                      backgroundColor: "#ffff",
-                      display: "flex",
-                      marginRight: "3vw",
-                    }}
-                  >
-                    <div style={{ marginLeft: "50px", marginRight: "50px" }}>
-                      <input
-                        name="shipmentYn"
-                        type="checkbox"
-                        id="shipmentPlanCheckbox"
-                        checked={
-                          selectedCustomer
-                            ? selectedCustomer.shipmentYn === "Y"
-                              ? true
+            {/*고객사 상세정보 */}
+            <div className="user-information">
+              {
+                <>
+                  <input type="submit" value="저장" />
+                  <div className="user" style={{ marginTop: "2vh" }}>
+                    고객사코드
+                    <input
+                      type="text"
+                      className="user-input"
+                      backgroundcolor="#FFCCCC"
+                      value={
+                        selectedCustomer ? selectedCustomer.custCd : undefined
+                      }
+                      readOnly // 수정 불가능하도록 설정
+                      name="custCd"
+                    />
+                  </div>
+                  <div className="user">
+                    고객사명
+                    <input
+                      type="text"
+                      name="custNm"
+                      placeholder="고객사명 입력"
+                      className="user-input"
+                      value={
+                        selectedCustomer ? selectedCustomer.custNm : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    지역
+                    <select
+                      className="user-select"
+                      name="regionCd"
+                      value={userInformation.regionCd}
+                      onChange={(e) =>
+                        handleUserInformationChange("regionCd", e.target.value)
+                      }
+                      required
+                    >
+                      {regionCd &&
+                        regionCd.map((col) => (
+                          <option value={col.typeCd} key={col.typeCd}>
+                            {col.typeNm}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div className="user">
+                    정산방법
+                    <select
+                      name="calCd"
+                      className="user-select"
+                      value={
+                        selectedCustomer ? selectedCustomer.calCd : undefined
+                      }
+                      onChange={(e) =>
+                        handleUserInformationChange("calCd", e.target.value)
+                      }
+                      required
+                    >
+                      {calCd &&
+                        calCd.map((col) => (
+                          <option value={col.typeCd} key={col.typeCd}>
+                            {col.typeNm}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div className="user">
+                    출하계획
+                    <div
+                      style={{
+                        border: "1px solid black",
+                        padding: "7px",
+                        width: "300px",
+                        backgroundColor: "#ffff",
+                        display: "flex",
+                        marginRight: "3vw",
+                      }}
+                    >
+                      <div style={{ marginLeft: "50px", marginRight: "50px" }}>
+                        <input
+                          name="shipmentYn"
+                          type="checkbox"
+                          id="shipmentPlanCheckbox"
+                          checked={
+                            selectedCustomer
+                              ? selectedCustomer.shipmentYn === "Y"
+                                ? true
+                                : false
                               : false
-                            : false
-                        }
-                        onChange={(e) => {
-                          console.log("selectedCustomer", selectedCustomer);
-                          setShipmentPlan(e.target.checked);
-                        }}
-                        required
-                      />
-                      <label htmlFor="shipmentPlanCheckbox">사용</label>
-                    </div>
-                    <div>
-                      <input
-                        name="shipmentYn"
-                        type="checkbox"
-                        id="noShipmentPlanCheckbox"
-                        checked={
-                          selectedCustomer
-                            ? selectedCustomer.shipmentYn === "Y"
-                              ? false
-                              : true
-                            : false
-                        }
-                        onChange={(e) => setShipmentPlan(!e.target.checked)}
-                      />
-                      <label htmlFor="noShipmentPlanCheckbox">미사용</label>
+                          }
+                          onChange={(e) => {
+                            console.log("selectedCustomer", selectedCustomer);
+                            setShipmentPlan(e.target.checked);
+                          }}
+                          // required
+                        />
+                        <label htmlFor="shipmentPlanCheckbox">사용</label>
+                      </div>
+                      <div>
+                        <input
+                          name="shipmentYn"
+                          type="checkbox"
+                          id="noShipmentPlanCheckbox"
+                          checked={
+                            selectedCustomer
+                              ? selectedCustomer.shipmentYn === "Y"
+                                ? false
+                                : true
+                              : false
+                          }
+                          onChange={(e) => setShipmentPlan(!e.target.checked)}
+                        />
+                        <label htmlFor="noShipmentPlanCheckbox">미사용</label>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="user">
-                  전화번호
-                  <input
-                    name="telNo"
-                    type="tel"
-                    placeholder="전화번호 입력 (예: 010-1234-5678)"
-                    required
-                    pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
-                    maxLength="13"
-                    className="user-input"
-                    value={
-                      selectedCustomer ? selectedCustomer.telNo : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  팩스번호
-                  <input
-                    name="faxNo"
-                    type="tel"
-                    placeholder="팩스번호 입력"
-                    className="user-input"
-                    value={
-                      selectedCustomer ? selectedCustomer.faxNo : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  우편번호
-                  <input
-                    name="postNo"
-                    type="tel"
-                    placeholder="우편번호 입력"
-                    className="user-input"
-                    maxLength="5"
-                    style={{ position: "relative" }}
-                    value={
-                      selectedCustomer ? selectedCustomer.postNo : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                  <i
-                    className="fa-solid fa-magnifying-glass"
-                    style={{
-                      position: "absolute",
-                      cursor: "pointer",
-                      right: "150px",
-                    }}
-                  ></i>
-                </div>
-                <div className="user">
-                  기본주소
-                  <input
-                    name="addStd"
-                    type="text"
-                    placeholder="기본주소 입력"
-                    className="user-input"
-                    value={
-                      selectedCustomer ? selectedCustomer.addStd : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  상세주소
-                  <input
-                    name="addDtl"
-                    type="text"
-                    placeholder="상세주소 입력"
-                    className="user-input"
-                    value={
-                      selectedCustomer ? selectedCustomer.addDtl : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  담당자
-                  <input
-                    name="manNm"
-                    type="text"
-                    placeholder="담당자 성함 입력"
-                    className="user-input"
-                    value={
-                      selectedCustomer ? selectedCustomer.manNm : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  담당자연락처
-                  <input
-                    name="manTelNo"
-                    type="tel"
-                    placeholder="담당자 연락처 입력(예: 010-1234-5678)"
-                    className="user-input"
-                    pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
-                    maxLength="13"
-                    value={
-                      selectedCustomer ? selectedCustomer.manTelNo : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="user">
-                  계산서수취메일
-                  <input
-                    type="text"
-                    name="invoiceMail"
-                    placeholder="계산서수취메일 입력"
-                    className="user-input"
-                    value={
-                      selectedCustomer
-                        ? selectedCustomer.invoiceMail
-                        : undefined
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </>
-            }
-          </div>
+                  <div className="user">
+                    전화번호
+                    <input
+                      name="telNo"
+                      type="tel"
+                      placeholder="전화번호 입력 (예: 010-1234-5678)"
+                      // required
+                      pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
+                      maxLength="13"
+                      className="user-input"
+                      value={
+                        selectedCustomer ? selectedCustomer.telNo : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    팩스번호
+                    <input
+                      name="faxNo"
+                      type="tel"
+                      placeholder="팩스번호 입력"
+                      className="user-input"
+                      value={
+                        selectedCustomer ? selectedCustomer.faxNo : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    우편번호
+                    <input
+                      name="postNo"
+                      type="tel"
+                      placeholder="우편번호 입력"
+                      className="user-input"
+                      maxLength="5"
+                      style={{ position: "relative" }}
+                      value={
+                        selectedCustomer ? selectedCustomer.postNo : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                    <i
+                      className="fa-solid fa-magnifying-glass"
+                      style={{
+                        position: "absolute",
+                        cursor: "pointer",
+                        right: "150px",
+                      }}
+                    ></i>
+                  </div>
+                  <div className="user">
+                    기본주소
+                    <input
+                      name="addStd"
+                      type="text"
+                      placeholder="기본주소 입력"
+                      className="user-input"
+                      value={
+                        selectedCustomer ? selectedCustomer.addStd : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    상세주소
+                    <input
+                      name="addDtl"
+                      type="text"
+                      placeholder="상세주소 입력"
+                      className="user-input"
+                      value={
+                        selectedCustomer ? selectedCustomer.addDtl : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    담당자
+                    <input
+                      name="manNm"
+                      type="text"
+                      placeholder="담당자 성함 입력"
+                      className="user-input"
+                      value={
+                        selectedCustomer ? selectedCustomer.manNm : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    담당자연락처
+                    <input
+                      name="manTelNo"
+                      type="tel"
+                      placeholder="담당자 연락처 입력(예: 010-1234-5678)"
+                      className="user-input"
+                      pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
+                      maxLength="13"
+                      value={
+                        selectedCustomer ? selectedCustomer.manTelNo : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="user">
+                    계산서수취메일
+                    <input
+                      type="text"
+                      name="invoiceMail"
+                      placeholder="계산서수취메일 입력"
+                      className="user-input"
+                      value={
+                        selectedCustomer
+                          ? selectedCustomer.invoiceMail
+                          : undefined
+                      }
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </>
+              }
+            </div>
+          </form>
         </div>
       </div>
     </div>
