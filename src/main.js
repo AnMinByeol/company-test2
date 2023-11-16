@@ -47,19 +47,54 @@ function Main() {
   const [rowData, setRowData] = useState(null);
   const [shipmentPlan, setShipmentPlan] = useState(null);
   const [searchParams, setSearchParams] = useState({});
-  const [selectedCustomer, setSelectedCustomer] = useState();
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   const [selectedTdIndex, setSelectedTdIndex] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [check, setCheck] = useState(false);
 
   const [newCustomerData, setNewCustomerData] = useState({
-  custCd: "",
-  custNm: "",
-  regionCd: "",
-  calCd: "",
-  useYn: "1",
-});
+    custCd: "",
+    custNm: "",
+    regionCd: "",
+    calCd: "",
+    useYn: "1",
+  });
+
+  // "추가" 아이콘을 클릭했을 때 실행되는 함수
+  const [formData, setFormData] = useState({
+    custCd: "",
+    custNm: "",
+    regionCd: "",
+    calCd: "",
+    shipmentYn: "",
+    telNo: "",
+    faxNo: "",
+    postNo: "",
+    addStd: "",
+    addDtl: "",
+    manNm: "",
+    manTelNo: "",
+    invoiceMail: "",
+    useYn: "",
+  });
+
+  const [errors, setErrors] = useState({
+    custCd: "",
+    custNm: "",
+    regionCd: "",
+    calCd: "",
+    shipmentYn: "",
+    telNo: "",
+    faxNo: "",
+    postNo: "",
+    addStd: "",
+    addDtl: "",
+    manNm: "",
+    manTelNo: "",
+    invoiceMail: "",
+    useYn: "",
+  });
 
   // API 엔드포인트 및 URL 정의
   const serverUrl = "http://133.186.221.46:8090/";
@@ -78,34 +113,37 @@ function Main() {
     { headerName: "사용여부", field: "useYn" },
   ];
 
-// 데이터 조회 함수
-const fetchData = async () => {
-  try {
-    const [commonCodeResponse, customerResponse] = await Promise.all([
-      fetch(commonCodeUrl),
-      fetch(customerUrl),
-    ]);
+  // 데이터 조회 함수
+  const fetchData = async () => {
+    try {
+      const [commonCodeResponse, customerResponse] = await Promise.all([
+        fetch(commonCodeUrl),
+        fetch(customerUrl),
+      ]);
 
-    if (!commonCodeResponse.ok || !customerResponse.ok) {
-      throw new Error("네트워크 응답이 올바르지 않습니다");
+      if (!commonCodeResponse.ok || !customerResponse.ok) {
+        throw new Error("네트워크 응답이 올바르지 않습니다");
+      }
+
+      const [commonCodeResult, customerResult] = await Promise.all([
+        commonCodeResponse.json(),
+        customerResponse.json(),
+      ]);
+
+      if (
+        commonCodeResult.code === "0" &&
+        Array.isArray(commonCodeResult.data)
+      ) {
+        // 공통 코드 데이터 사용
+      }
+
+      if (customerResult.code === "0" && Array.isArray(customerResult.data)) {
+        setRowData(customerResult.data);
+      }
+    } catch (error) {
+      console.error("데이터를 가져오는 중 오류 발생:", error);
     }
-
-    const [commonCodeResult, customerResult] = await Promise.all([
-      commonCodeResponse.json(),
-      customerResponse.json(),
-    ]);
-
-    if (commonCodeResult.code === "0" && Array.isArray(commonCodeResult.data)) {
-      // 공통 코드 데이터 사용
-    }
-
-    if (customerResult.code === "0" && Array.isArray(customerResult.data)) {
-      setRowData(customerResult.data);
-    }
-  } catch (error) {
-    console.error("데이터를 가져오는 중 오류 발생:", error);
-  }
-};
+  };
 
   // 데이터 조회 함수
   const list = async () => {
@@ -147,6 +185,7 @@ const fetchData = async () => {
 
       if (result.code === "0" && Array.isArray(result.data)) {
         setRowData(result.data);
+        setIsReady(true);
       }
     } catch (error) {
       console.error("데이터를 가져오는 중 오류 발생:", error);
@@ -177,10 +216,12 @@ const fetchData = async () => {
   };
 
   // 테이블 행 클릭 핸들러
-  const handleTableRowClick = async (custCd) => {
+  const handleTableRowClick = async (dataRow) => {
     try {
+      console.log("formData:::", formData);
+
       const detailUrl = `${serverUrl}test/api/search/customer/detail`;
-      const requestBody = { custCd: custCd };
+      const requestBody = { custCd: dataRow.custCd };
 
       const response = await fetch(detailUrl, {
         method: "POST",
@@ -197,6 +238,7 @@ const fetchData = async () => {
       const result = await response.json();
 
       if (result.code === "0" && result.data) {
+        console.log("result.data:::", result.data);
         setSelectedCustomer(result.data);
       }
     } catch (error) {
@@ -248,28 +290,137 @@ const fetchData = async () => {
     }
   };
 
-  // "추가" 아이콘을 클릭했을 때 실행되는 함수
-  const handleAddClick = () => {
-    console.log("추가 버튼 클릭");
-    setNewCustomerData({
-      custCd: "", // 예시로 초기값을 비움
-      custNm: "",
-      regionCd: "",
-      calCd: "",
-      useYn: "1", // 예시로 기본값을 "Y"로 설정
-      // 다른 필요한 속성들도 추가할 수 있음
-    });
+  // 입력 필드의 값이 변경될 때마다 호출되는 함수
+  const handleInputChange = (event) => {
+    if (event) {
+      const { name, value } = event.target;
+      setFormData({
+        ...formData,
+        [name]: value,
+        // __changed: true,
+      });
+
+      return event.target.value;
+    }
   };
 
-  // "저장" 버튼 클릭 시 실행되는 함수
-  const handleSaveNewCustomer = async (saveType) => {
-    console.log("저장 버튼 클릭");
+  // 회원가입 양식 제출 처리
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    const newErrors = {};
+
+    // 유효성 검사
+    if (formData.custNm.length === 0) {
+      newErrors.custNm = "필수입력해야합니다";
+    }
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      try {
+        // 유효성 검사 통과 시, 새로운 행 추가
+        const newRow = {
+          saveType: 0,
+          custCd: formData.custCd,
+          custNm: formData.custNm,
+          regionCd: formData.regionCd,
+          calCd: formData.calCd,
+          shipmentYn: formData.shipmentYn,
+          telNo: formData.telNo,
+          faxNo: formData.faxNo,
+          postNo: formData.postNo,
+          addStd: formData.addStd,
+          addDtl: formData.addDtl,
+          manNm: formData.manNm,
+          manTelNo: formData.manTelNo,
+          invoiceMail: formData.invoiceMail,
+          useYn: formData.useYn,
+        };
+
+        console.log("isReady:::", isReady);
+        // Data를 불러온 상태일 때만 실행
+        if (isReady) {
+          // rowData에 새로운 행 추가
+          setRowData((prevRowData) => [...prevRowData, newRow]);
+
+          // 서버에 데이터 저장
+          const saveUrl = `${serverUrl}test/api/save/customer`;
+          let addData;
+
+          if (selectedCustomer) {
+            // 기존 데이터가 있을 경우 (수정)
+            addData = { ...selectedCustomer, saveType: 2 };
+          } else {
+            // 기존 데이터가 없을 경우 (신규 등록)
+            addData = { ...newRow, saveType: 1 };
+          }
+
+          const requestBody = addData;
+
+          const response = await fetch(saveUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+          });
+
+          if (!response.ok) {
+            throw new Error("서버 응답이 올바르지 않습니다");
+          }
+
+          const result = await response.json();
+
+          if (result.code === "0") {
+            // 추가 후에 입력 폼 초기화
+            setFormData({
+              custCd: "",
+              custNm: "",
+              regionCd: "",
+              calCd: "",
+              shipmentYn: "",
+              telNo: "",
+              faxNo: "",
+              postNo: "",
+              addStd: "",
+              addDtl: "",
+              manNm: "",
+              manTelNo: "",
+              invoiceMail: "",
+              useYn: "",
+            });
+
+            console.log("고객사가 추가되었습니다.");
+            list(); // 테이블 갱신
+          } else {
+            console.error("고객사 추가 중 오류 발생:", result.message);
+          }
+        } else {
+          alert("데이터를 불러온 다음 실행해 주세요!");
+        }
+      } catch (error) {
+        console.error("고객사 추가 중 오류 발생:", error);
+      }
+    }
+  };
+
+  // "수정" 버튼 클릭 시 실행되는 함수
+  const handleCorrection = async () => {
     try {
       const saveUrl = `${serverUrl}test/api/save/customer`;
 
-      const requestBody = {
-        data: [{ ...newCustomerData, SAVE_TYPE: 1 }], // SAVE_TYPE을 1로 설정하여 신규 등록임을 서버에 알림
-      };
+      let requestBody = {};
+
+      if (selectedCustomer) {
+        // 기존 데이터가 있을 경우 (수정)
+        requestBody = { ...selectedCustomer, saveType: 2 };
+      } else {
+        // 기존 데이터가 없을 경우 (신규 등록)
+        requestBody = { ...newCustomerData, saveType: 1 };
+      }
+
+      // const requestBody = saveData;
+      console.log("requestBody:::", requestBody);
+      console.log("formData:::", formData);
 
       const response = await fetch(saveUrl, {
         method: "POST",
@@ -280,18 +431,47 @@ const fetchData = async () => {
       });
 
       if (!response.ok) {
-        throw new Error("네트워크 응답이 올바르지 않습니다");
+        throw new Error("서버 응답이 올바르지 않습니다");
       }
 
       const result = await response.json();
 
       if (result.code === "0") {
-        console.log("고객사가 성공적으로 추가되었습니다.");
+        console.log(`${selectedCustomer ? "수정" : "추가"}되었습니다.`);
+        // 테이블 데이터 갱신
+        const updatedRowData = [...rowData];
+
+        if (selectedCustomer) {
+          // 기존 데이터가 있을 경우 (수정)
+          const updatedIndex = updatedRowData.findIndex(
+            (row) => row.custCd === selectedCustomer.custCd
+          );
+          updatedRowData[updatedIndex] = result.data; // 수정된 데이터로 교체
+        } else {
+          // 기존 데이터가 없을 경우 (신규 등록)
+          updatedRowData.push(result.data); // 신규 등록된 데이터 추가
+        }
+
+        setRowData(updatedRowData);
+
         list(); // 테이블 갱신
       }
     } catch (error) {
-      console.error("고객사 추가 중 오류 발생:", error);
+      console.error("고객사 처리 중 오류 발생:", error);
     }
+  };
+
+  // user-information
+  const [userInformation, setUserInformation] = useState({
+    regionCd: "",
+    calCd: "",
+  });
+
+  const handleUserInformationChange = (field, value) => {
+    setUserInformation((prevUserInformation) => ({
+      ...prevUserInformation,
+      [field]: value,
+    }));
   };
 
   // 종료 버튼 클릭 핸들러
@@ -345,7 +525,7 @@ const fetchData = async () => {
                 className="dropdown-content"
                 style={{
                   position: "absolute",
-                  backgroundColor: "#f1f1f1",
+                  backgroundcolor: "#f1f1f1",
                   minWidth: "160px",
                   boxShadow: "0px 8px 16px 0px rgba(0,0,0,0.2)",
                   zIndex: 1,
@@ -458,7 +638,7 @@ const fetchData = async () => {
                     return (
                       <tr
                         key={rowIndex}
-                        onClick={() => handleTableRowClick(dataRow.custCd)}
+                        onClick={() => handleTableRowClick(dataRow)}
                         style={{ cursor: "pointer" }}
                       >
                         <td>{rowIndex + 1}</td>
@@ -492,13 +672,17 @@ const fetchData = async () => {
               <i
                 className="fa-solid fa-plus"
                 style={{ marginRight: "20px", cursor: "pointer" }}
-                onClick={handleAddClick}
+                onClick={handleAdd}
               ></i>
-              <i className="fa-regular fa-floppy-disk" style={{ cursor: "pointer" }} onClick={handleSaveNewCustomer}></i>
+              <i
+                className="fa-regular fa-floppy-disk"
+                style={{ cursor: "pointer" }}
+                onClick={handleCorrection}
+              ></i>
             </div>
           </div>
           {/*고객사 상세정보 */}
-          <div className="user-information" >
+          <div className="user-information">
             {
               <>
                 <div className="user" style={{ marginTop: "2vh" }}>
@@ -506,30 +690,36 @@ const fetchData = async () => {
                   <input
                     type="text"
                     className="user-input"
-                    backgroundColor= "#FFCCCC"
-                    value={selectedCustomer ? selectedCustomer.custCd : null}
+                    backgroundcolor="#FFCCCC"
+                    value={
+                      selectedCustomer ? selectedCustomer.custCd : undefined
+                    }
                     readOnly // 수정 불가능하도록 설정
+                    name="custCd"
                   />
                 </div>
                 <div className="user">
                   고객사명
                   <input
                     type="text"
+                    name="custNm"
                     placeholder="고객사명 입력"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.custNm : null}
+                    value={handleInputChange()}
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   지역
                   <select
                     className="user-select"
-                    value={selectedCustomer ? selectedCustomer.regionCd : null}
+                    name="regionCd"
+                    value={userInformation.regionCd}
                     onChange={(e) =>
-                      handleSearchParamsChange("regionCd", e.target.value)
+                      handleUserInformationChange("regionCd", e.target.value)
                     }
+                    required
                   >
-                    <option value="">전체</option>
                     <option value="1">도내</option>
                     <option value="2">도외</option>
                     <option value="3">기타</option>
@@ -538,13 +728,16 @@ const fetchData = async () => {
                 <div className="user">
                   정산방법
                   <select
+                    name="calCd"
                     className="user-select"
-                    value={selectedCustomer ? selectedCustomer.calCd : null}
-                    onChange={(e) =>
-                      handleSearchParamsChange("calCd", e.target.value)
+                    value={
+                      selectedCustomer ? selectedCustomer.calCd : undefined
                     }
+                    onChange={(e) =>
+                      handleUserInformationChange("calCd", e.target.value)
+                    }
+                    required
                   >
-                    <option value="">전체</option>
                     <option value="1">고산농협</option>
                     <option value="2">직접정산</option>
                     <option value="3">기타</option>
@@ -564,6 +757,7 @@ const fetchData = async () => {
                   >
                     <div style={{ marginLeft: "50px", marginRight: "50px" }}>
                       <input
+                        name="shipmentYn"
                         type="checkbox"
                         id="shipmentPlanCheckbox"
                         checked={
@@ -577,11 +771,13 @@ const fetchData = async () => {
                           console.log("selectedCustomer", selectedCustomer);
                           setShipmentPlan(e.target.checked);
                         }}
+                        required
                       />
                       <label htmlFor="shipmentPlanCheckbox">사용</label>
                     </div>
                     <div>
                       <input
+                        name="shipmentYn"
                         type="checkbox"
                         id="noShipmentPlanCheckbox"
                         checked={
@@ -600,33 +796,45 @@ const fetchData = async () => {
                 <div className="user">
                   전화번호
                   <input
-                    type="tel" // 숫자 전용 입력란으로 설정
+                    name="telNo"
+                    type="tel"
                     placeholder="전화번호 입력 (예: 010-1234-5678)"
                     required
                     pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
-                    maxlength="13"
+                    maxLength="13"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.telNo : null}
+                    value={
+                      selectedCustomer ? selectedCustomer.telNo : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   팩스번호
                   <input
+                    name="faxNo"
                     type="tel"
                     placeholder="팩스번호 입력"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.faxNo : null}
+                    value={
+                      selectedCustomer ? selectedCustomer.faxNo : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   우편번호
                   <input
+                    name="postNo"
                     type="tel"
                     placeholder="우편번호 입력"
                     className="user-input"
-                    maxlength="5"
+                    maxLength="5"
                     style={{ position: "relative" }}
-                    value={selectedCustomer ? selectedCustomer.postNo : null}
+                    value={
+                      selectedCustomer ? selectedCustomer.postNo : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                   <i
                     className="fa-solid fa-magnifying-glass"
@@ -640,50 +848,70 @@ const fetchData = async () => {
                 <div className="user">
                   기본주소
                   <input
+                    name="addStd"
                     type="text"
                     placeholder="기본주소 입력"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.addStd : null}
+                    value={
+                      selectedCustomer ? selectedCustomer.addStd : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   상세주소
                   <input
+                    name="addDtl"
                     type="text"
                     placeholder="상세주소 입력"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.addDtl : null}
+                    value={
+                      selectedCustomer ? selectedCustomer.addDtl : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   담당자
                   <input
+                    name="manNm"
                     type="text"
                     placeholder="담당자 성함 입력"
                     className="user-input"
-                    value={selectedCustomer ? selectedCustomer.manNm : null}
+                    value={
+                      selectedCustomer ? selectedCustomer.manNm : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   담당자연락처
                   <input
+                    name="manTelNo"
                     type="tel"
                     placeholder="담당자 연락처 입력(예: 010-1234-5678)"
                     className="user-input"
                     pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
-                    maxlength="13"
-                    value={selectedCustomer ? selectedCustomer.manTelNo : null}
+                    maxLength="13"
+                    value={
+                      selectedCustomer ? selectedCustomer.manTelNo : undefined
+                    }
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="user">
                   계산서수취메일
                   <input
                     type="text"
+                    name="invoiceMail"
                     placeholder="계산서수취메일 입력"
                     className="user-input"
                     value={
-                      selectedCustomer ? selectedCustomer.invoiceMail : null
+                      selectedCustomer
+                        ? selectedCustomer.invoiceMail
+                        : undefined
                     }
+                    onChange={handleInputChange}
                   />
                 </div>
               </>
