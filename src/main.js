@@ -17,6 +17,7 @@ function getRegionText(regionCd) {
 
 // 정산 방법 코드에 따른 텍스트 반환
 function getCalText(calCd) {
+  console.log(calCd);
   switch (calCd) {
     case 1:
       return "고산농협";
@@ -346,30 +347,11 @@ function Main() {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        // 유효성 검사 통과 시, 새로운 행 추가
-        const newRow = {
-          saveType: 0,
-          custCd: formData.custCd,
-          custNm: formData.custNm,
-          regionCd: formData.regionCd,
-          calCd: formData.calCd,
-          shipmentYn: formData.shipmentYn,
-          telNo: formData.telNo,
-          faxNo: formData.faxNo,
-          postNo: formData.postNo,
-          addStd: formData.addStd,
-          addDtl: formData.addDtl,
-          manNm: formData.manNm,
-          manTelNo: formData.manTelNo,
-          invoiceMail: formData.invoiceMail,
-          useYn: formData.useYn,
-        };
-
         console.log("isReady:::", isReady);
         // Data를 불러온 상태일 때만 실행
         if (isReady) {
           // rowData에 새로운 행 추가
-          setRowData((prevRowData) => [...prevRowData, newRow]);
+          setRowData((prevRowData) => [...prevRowData, formData]);
 
           // 서버에 데이터 저장
           const saveUrl = `${serverUrl}test/api/save/customer`;
@@ -377,10 +359,10 @@ function Main() {
 
           if (selectedCustomer) {
             // 기존 데이터가 있을 경우 (수정)
-            addData = { ...selectedCustomer, saveType: 2 };
+            addData = { ...formData, saveType: 2 };
           } else {
             // 기존 데이터가 없을 경우 (신규 등록)
-            addData = { ...newRow, saveType: 1 };
+            addData = { ...formData, saveType: 1 };
           }
 
           const requestBody = addData;
@@ -500,10 +482,12 @@ function Main() {
   const handleUserInformationChange = (field, value) => {
     console.log("field ::: ", field);
     console.log("value ::: ", value);
-    setUserInformation((prevUserInformation) => ({
+
+    setFormData((prevUserInformation) => ({
       ...prevUserInformation,
       [field]: value,
     }));
+    console.log("prevUserInformation ::: ", userInformation);
   };
 
   // 종료 버튼 클릭 핸들러
@@ -741,7 +725,9 @@ function Main() {
                     name="custNm"
                     placeholder="고객사명 입력"
                     className="user-input"
-                    value={handleInputChange()}
+                    value={
+                      selectedCustomer ? selectedCustomer.custNm : undefined
+                    }
                     onChange={handleInputChange}
                   />
                 </div>
@@ -758,7 +744,9 @@ function Main() {
                   >
                     {regionCd &&
                       regionCd.map((col) => (
-                        <option key={col.typeCd}>{col.typeNm}</option>
+                        <option value={col.typeCd} key={col.typeCd}>
+                          {col.typeNm}
+                        </option>
                       ))}
                   </select>
                 </div>
@@ -777,7 +765,9 @@ function Main() {
                   >
                     {calCd &&
                       calCd.map((col) => (
-                        <option key={col.typeCd}>{col.typeNm}</option>
+                        <option value={col.typeCd} key={col.typeCd}>
+                          {col.typeNm}
+                        </option>
                       ))}
                   </select>
                 </div>
