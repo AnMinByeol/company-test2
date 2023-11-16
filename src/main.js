@@ -53,6 +53,10 @@ function Main() {
   const [isReady, setIsReady] = useState(false);
   const [check, setCheck] = useState(false);
 
+  const [regionCd, setRegionCd] = useState([]);
+  const [calCd, setCalCd] = useState([]);
+  const [useYn, setUseYn] = useState([]);
+
   const [newCustomerData, setNewCustomerData] = useState({
     custCd: "",
     custNm: "",
@@ -121,6 +125,9 @@ function Main() {
         fetch(customerUrl),
       ]);
 
+      console.log("commonCodeResponse :::: ", commonCodeResponse);
+      console.log("customerResponse :::: ", customerResponse);
+
       if (!commonCodeResponse.ok || !customerResponse.ok) {
         throw new Error("네트워크 응답이 올바르지 않습니다");
       }
@@ -129,6 +136,9 @@ function Main() {
         commonCodeResponse.json(),
         customerResponse.json(),
       ]);
+
+      console.log("commonCodeResult :::: ", commonCodeResult);
+      console.log("customerResult :::: ", customerResult);
 
       if (
         commonCodeResult.code === "0" &&
@@ -144,6 +154,25 @@ function Main() {
       console.error("데이터를 가져오는 중 오류 발생:", error);
     }
   };
+
+  useEffect(() => {
+    test("CAL_CD").then((res) => setCalCd(res.data));
+    test("REGION_CD").then((res) => setRegionCd(res.data));
+    test("USE_YN").then((res) => setUseYn(res.data));
+  }, []);
+
+  async function test(code) {
+    const body = JSON.stringify({ comCd: code });
+    const response = await fetch(commonCodeUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+    const data = await response.json(); //const data await 추가
+    return data;
+  }
 
   // 데이터 조회 함수
   const list = async () => {
@@ -440,6 +469,7 @@ function Main() {
         console.log(`${selectedCustomer ? "수정" : "추가"}되었습니다.`);
         // 테이블 데이터 갱신
         const updatedRowData = [...rowData];
+        console.log("새 데이터 업로드::", updatedRowData);
 
         if (selectedCustomer) {
           // 기존 데이터가 있을 경우 (수정)
@@ -468,6 +498,8 @@ function Main() {
   });
 
   const handleUserInformationChange = (field, value) => {
+    console.log("field ::: ", field);
+    console.log("value ::: ", value);
     setUserInformation((prevUserInformation) => ({
       ...prevUserInformation,
       [field]: value,
@@ -573,9 +605,10 @@ function Main() {
             }
           >
             <option value="">전체</option>
-            <option value="1">도내</option>
-            <option value="2">도외</option>
-            <option value="3">기타</option>
+            {regionCd &&
+              regionCd.map((col) => (
+                <option key={col.typeCd}>{col.typeNm}</option>
+              ))}
           </select>
         </div>
         <div className="third-box2">
@@ -586,9 +619,10 @@ function Main() {
             onChange={(e) => handleSearchParamsChange("calCd", e.target.value)}
           >
             <option value="">전체</option>
-            <option value="1">고산농협</option>
-            <option value="2">직접정산</option>
-            <option value="3">기타</option>
+            {calCd &&
+              calCd.map((col) => (
+                <option key={col.typeCd}>{col.typeNm}</option>
+              ))}
           </select>
         </div>
         <div className="third-input">
@@ -608,8 +642,10 @@ function Main() {
             onChange={(e) => handleSearchParamsChange("useYn", e.target.value)}
           >
             <option value="">전체</option>
-            <option value="1">Y</option>
-            <option value="2">N</option>
+            {useYn &&
+              useYn.map((col) => (
+                <option key={col.typeCd}>{col.typeNm}</option>
+              ))}
           </select>
         </div>
       </div>
@@ -720,9 +756,10 @@ function Main() {
                     }
                     required
                   >
-                    <option value="1">도내</option>
-                    <option value="2">도외</option>
-                    <option value="3">기타</option>
+                    {regionCd &&
+                      regionCd.map((col) => (
+                        <option key={col.typeCd}>{col.typeNm}</option>
+                      ))}
                   </select>
                 </div>
                 <div className="user">
@@ -738,9 +775,10 @@ function Main() {
                     }
                     required
                   >
-                    <option value="1">고산농협</option>
-                    <option value="2">직접정산</option>
-                    <option value="3">기타</option>
+                    {calCd &&
+                      calCd.map((col) => (
+                        <option key={col.typeCd}>{col.typeNm}</option>
+                      ))}
                   </select>
                 </div>
                 <div className="user">
