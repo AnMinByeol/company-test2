@@ -93,7 +93,8 @@
 }
 
 .user-information {
-  height: 65vh;
+  padding-top: 10px;
+  height: 64vh;
   background-color: #ffffff;
   border-radius: 10px;
   background-color: #ddd;
