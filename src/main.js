@@ -50,7 +50,22 @@ function Main() {
   const [rowData, setRowData] = useState(null);
   const [shipmentPlan, setShipmentPlan] = useState(null);
   const [searchParams, setSearchParams] = useState({});
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState({
+    custCd: "",
+    custNm: "",
+    regionCd: "",
+    calCd: "",
+    shipmentYn: "N",
+    telNo: "",
+    faxNo: "",
+    postNo: "",
+    addStd: "",
+    addDtl: "",
+    manNm: "",
+    manTelNo: "",
+    invoiceMail: "",
+    useYn: "1",
+  });
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   const [selectedTdIndex, setSelectedTdIndex] = useState(null);
   const [isReady, setIsReady] = useState(false);
@@ -58,6 +73,10 @@ function Main() {
   const [regionCd, setRegionCd] = useState([]);
   const [calCd, setCalCd] = useState([]);
   const [useYn, setUseYn] = useState([]);
+
+  // 포지셔닝
+  let data = [1, 2, 3, 4, 5];
+  let [btnActive, setBtnActive] = useState("");
 
   // 우편번호
   const [zipCode, setZipcode] = useState("");
@@ -261,7 +280,6 @@ function Main() {
   const handleTableRowClick = async (dataRow) => {
     try {
       console.log("formData:::", formData);
-
       const detailUrl = `${serverUrl}test/api/search/customer/detail`;
       const requestBody = { custCd: dataRow.custCd };
 
@@ -282,6 +300,7 @@ function Main() {
       if (result.code === "0" && result.data) {
         console.log("result.data:::", result.data);
         setSelectedCustomer(result.data);
+        setSelectedCustomer(dataRow);
       }
     } catch (error) {
       console.error("상세정보를 불러오는 중 오류 발생:", error);
@@ -352,7 +371,7 @@ function Main() {
       custNm: "",
       regionCd: "",
       calCd: "",
-      shipmentYn: "",
+      shipmentYn: "N",
       telNo: "",
       faxNo: "",
       postNo: "",
@@ -445,13 +464,15 @@ function Main() {
   //   }
   // };
 
-  // "수정" 버튼 클릭 시 실행되는 함수
+  // "저장" 버튼 클릭 시 실행되는 함수
   const handleCorrection = async () => {
     try {
       const saveUrl = `${serverUrl}test/api/save/customer`;
 
+      // selectedCustomer({ useYn: 1 });
+
       let requestBody = {};
-      console.log("selectedCustomer:::", selectedCustomer);
+      console.log("저장저장:::", selectedCustomer);
       if (selectedCustomer.custCd) {
         // 기존 데이터가 있을 경우 (수정)
         requestBody = { ...selectedCustomer, saveType: 2 };
@@ -473,8 +494,10 @@ function Main() {
       }
 
       const result = await response.json();
-
+      console.log(result);
       if (result.code === "0") {
+        setSelectedCustomer({ ...selectedCustomer, custCd: result.data });
+
         list(); // 테이블 갱신
       }
     } catch (error) {
@@ -521,6 +544,13 @@ function Main() {
       padding: "0",
       overflow: "hidden",
     },
+  };
+
+  // 포지셔닝
+  const toggleActive = (e) => {
+    setBtnActive((prev) => {
+      return e.target.value;
+    });
   };
 
   // 검색 클릭
@@ -696,7 +726,13 @@ function Main() {
                       <tr
                         key={rowIndex}
                         onClick={() => handleTableRowClick(dataRow)}
-                        style={{ cursor: "pointer" }}
+                        style={{
+                          cursor: "pointer",
+                          background:
+                            selectedCustomer.custCd === dataRow.custCd
+                              ? "lightblue"
+                              : "white",
+                        }}
                       >
                         <td>{rowIndex + 1}</td>
                         <td>{dataRow.custCd}</td>
@@ -722,6 +758,11 @@ function Main() {
                             id={`useYnCheckbox_${rowIndex}`}
                             checked={dataRow.useYn === "1"}
                             onChange={() => handleUseYnCheckboxChange(rowIndex)}
+                            value={rowIndex}
+                            className={
+                              "btn" + (rowIndex === btnActive ? " active" : "")
+                            }
+                            onClick={toggleActive}
                           />
                           <label htmlFor={`useYnCheckbox_${rowIndex}`}>
                             {getUseText(parseInt(dataRow.useYn))}
@@ -761,7 +802,7 @@ function Main() {
             <div className="user-information">
               {
                 <>
-                  <div className="user">
+                  <div className="user" style={{ marginTop: "10px" }}>
                     고객사코드
                     <input
                       type="text"
@@ -770,8 +811,9 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.custCd : undefined
                       }
-                      readOnly // 수정 불가능하도록 설정
+                      disabled // 수정 불가능하도록 설정
                       name="custCd"
+                      required //필수입력
                     />
                   </div>
                   <div className="user">
@@ -799,6 +841,8 @@ function Main() {
                       onChange={(e) => handleUpdata("regionCd", e.target.value)}
                       required //필수입력
                     >
+                      {/* 빈 기본 옵션 추가 */}
+                      <option key="default-empty" hidden></option>
                       {regionCd &&
                         regionCd.map((col) => (
                           <option value={col.typeCd} key={col.typeCd}>
@@ -818,6 +862,8 @@ function Main() {
                       onChange={(e) => handleUpdata("calCd", e.target.value)}
                       required //필수입력
                     >
+                      {/* 빈 기본 옵션 추가 */}
+                      <option key="default-empty" hidden></option>
                       {calCd &&
                         calCd.map((col) => (
                           <option value={col.typeCd} key={col.typeCd}>
@@ -879,21 +925,26 @@ function Main() {
                       </div>
                     </div>
                   </div>
-                  <form className="user">
+                  <div className="user">
                     전화번호
                     <input
                       name="telNo"
                       type="tel"
                       placeholder="전화번호 입력 (예: 010-1234-5678)"
-                      pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
                       maxLength="13"
                       className="user-input"
                       value={
                         selectedCustomer ? selectedCustomer.telNo : undefined
                       }
-                      onChange={(e) => handleUpdata("telNo", e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(
+                          /(\d{3})(\d{4})(\d{4})/,
+                          "$1-$2-$3"
+                        );
+                        handleUpdata("telNo", value);
+                      }}
                     />
-                  </form>
+                  </div>
                   <div className="user">
                     팩스번호
                     <input
@@ -920,6 +971,7 @@ function Main() {
                         selectedCustomer ? selectedCustomer.postNo : undefined
                       }
                       onChange={(e) => handleUpdata("postNo", e.target.value)}
+                      readOnly
                     />
                     <i
                       className="fa-solid fa-magnifying-glass"
@@ -942,6 +994,7 @@ function Main() {
                         selectedCustomer ? selectedCustomer.addStd : undefined
                       }
                       onChange={(e) => handleUpdata("addStd", e.target.value)}
+                      readOnly
                     />
                   </div>
                   <div className="user">
