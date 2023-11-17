@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import DaumPostcode from "react-daum-postcode";
+import Modal from "react-modal";
 
 // 지역 코드에 따른 텍스트 반환
 function getRegionText(regionCd) {
@@ -52,11 +54,16 @@ function Main() {
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   const [selectedTdIndex, setSelectedTdIndex] = useState(null);
   const [isReady, setIsReady] = useState(false);
-  const [check, setCheck] = useState(false);
 
   const [regionCd, setRegionCd] = useState([]);
   const [calCd, setCalCd] = useState([]);
   const [useYn, setUseYn] = useState([]);
+
+  // 우편번호
+  const [zipCode, setZipcode] = useState("");
+  const [roadAddress, setRoadAddress] = useState("");
+  const [detailAddress, setDetailAddress] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const [newCustomerData, setNewCustomerData] = useState({
     custCd: "",
@@ -245,6 +252,11 @@ function Main() {
     setRowData(updatedRowData);
   };
 
+  const handleUpdata = (key, value) => {
+    console.log("key :::", key, "   value ::::: ", value);
+    setSelectedCustomer({ ...selectedCustomer, [key]: value });
+  };
+
   // 테이블 행 클릭 핸들러
   const handleTableRowClick = async (dataRow) => {
     try {
@@ -334,85 +346,104 @@ function Main() {
     }
   };
 
-  // 회원가입 양식 제출 처리
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
-
-    // 유효성 검사
-    if (formData.custNm.length === 0) {
-      newErrors.custNm = "필수입력해야합니다";
-    }
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        console.log("isReady:::", isReady);
-        // Data를 불러온 상태일 때만 실행
-        if (isReady) {
-          // rowData에 새로운 행 추가
-          setRowData((prevRowData) => [...prevRowData, formData]);
-
-          // 서버에 데이터 저장
-          const saveUrl = `${serverUrl}test/api/save/customer`;
-          let addData;
-
-          if (selectedCustomer) {
-            // 기존 데이터가 있을 경우 (수정)
-            addData = { ...formData, saveType: 2 };
-          } else {
-            // 기존 데이터가 없을 경우 (신규 등록)
-            addData = { ...formData, saveType: 1 };
-          }
-
-          const requestBody = addData;
-
-          const response = await fetch(saveUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
-          });
-
-          if (!response.ok) {
-            throw new Error("서버 응답이 올바르지 않습니다");
-          }
-
-          const result = await response.json();
-
-          if (result.code === "0") {
-            // 추가 후에 입력 폼 초기화
-            setFormData({
-              custCd: "",
-              custNm: "",
-              regionCd: "",
-              calCd: "",
-              shipmentYn: "",
-              telNo: "",
-              faxNo: "",
-              postNo: "",
-              addStd: "",
-              addDtl: "",
-              manNm: "",
-              manTelNo: "",
-              invoiceMail: "",
-              useYn: "",
-            });
-
-            console.log("고객사가 추가되었습니다.");
-            list(); // 테이블 갱신
-          } else {
-            console.error("고객사 추가 중 오류 발생:", result.message);
-          }
-        } else {
-          alert("데이터를 불러온 다음 실행해 주세요!");
-        }
-      } catch (error) {
-        console.error("고객사 추가 중 오류 발생:", error);
-      }
-    }
+  const handleAdd = () => {
+    setSelectedCustomer({
+      custCd: "",
+      custNm: "",
+      regionCd: "",
+      calCd: "",
+      shipmentYn: "",
+      telNo: "",
+      faxNo: "",
+      postNo: "",
+      addStd: "",
+      addDtl: "",
+      manNm: "",
+      manTelNo: "",
+      invoiceMail: "",
+      useYn: "1",
+    });
   };
+
+  // // 회원가입 양식 제출 처리
+  // const handleAdd = async (e) => {
+  //   e.preventDefault();
+  //   const newErrors = {};
+
+  //   // 유효성 검사
+  //   if (formData.custNm.length === 0) {
+  //     newErrors.custNm = "필수입력해야합니다";
+  //   }
+  //   setErrors(newErrors);
+
+  //   if (Object.keys(newErrors).length === 0) {
+  //     try {
+  //       console.log("isReady:::", isReady);
+  //       // Data를 불러온 상태일 때만 실행
+  //       if (isReady) {
+  //         // rowData에 새로운 행 추가
+  //         setRowData((prevRowData) => [...prevRowData, formData]);
+
+  //         // 서버에 데이터 저장
+  //         const saveUrl = `${serverUrl}test/api/save/customer`;
+  //         let addData;
+
+  //         if (selectedCustomer) {
+  //           // 기존 데이터가 있을 경우 (수정)
+  //           addData = { ...formData, saveType: 2 };
+  //         } else {
+  //           // 기존 데이터가 없을 경우 (신규 등록)
+  //           addData = { ...formData, saveType: 1 };
+  //         }
+
+  //         const requestBody = addData;
+
+  //         const response = await fetch(saveUrl, {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify(requestBody),
+  //         });
+
+  //         if (!response.ok) {
+  //           throw new Error("서버 응답이 올바르지 않습니다");
+  //         }
+
+  //         const result = await response.json();
+
+  //         if (result.code === "0") {
+  //           // 추가 후에 입력 폼 초기화
+  //           setFormData({
+  //             custCd: "",
+  //             custNm: "",
+  //             regionCd: "",
+  //             calCd: "",
+  //             shipmentYn: "",
+  //             telNo: "",
+  //             faxNo: "",
+  //             postNo: "",
+  //             addStd: "",
+  //             addDtl: "",
+  //             manNm: "",
+  //             manTelNo: "",
+  //             invoiceMail: "",
+  //             useYn: "",
+  //           });
+
+  //           console.log("고객사가 추가되었습니다.");
+  //           list(); // 테이블 갱신
+  //         } else {
+  //           console.error("고객사 추가 중 오류 발생:", result.message);
+  //         }
+  //       } else {
+  //         alert("데이터를 불러온 다음 실행해 주세요!");
+  //       }
+  //     } catch (error) {
+  //       console.error("고객사 추가 중 오류 발생:", error);
+  //     }
+  //   }
+  // };
 
   // "수정" 버튼 클릭 시 실행되는 함수
   const handleCorrection = async () => {
@@ -420,19 +451,15 @@ function Main() {
       const saveUrl = `${serverUrl}test/api/save/customer`;
 
       let requestBody = {};
-
-      if (selectedCustomer) {
+      console.log("selectedCustomer:::", selectedCustomer);
+      if (selectedCustomer.custCd) {
         // 기존 데이터가 있을 경우 (수정)
         requestBody = { ...selectedCustomer, saveType: 2 };
       } else {
         // 기존 데이터가 없을 경우 (신규 등록)
-        requestBody = { ...newCustomerData, saveType: 1 };
+        requestBody = { ...selectedCustomer, saveType: 1 };
       }
-
-      // const requestBody = saveData;
       console.log("requestBody:::", requestBody);
-      console.log("formData:::", formData);
-
       const response = await fetch(saveUrl, {
         method: "POST",
         headers: {
@@ -448,46 +475,11 @@ function Main() {
       const result = await response.json();
 
       if (result.code === "0") {
-        console.log(`${selectedCustomer ? "수정" : "추가"}되었습니다.`);
-        // 테이블 데이터 갱신
-        const updatedRowData = [...rowData];
-        console.log("새 데이터 업로드::", updatedRowData);
-
-        if (selectedCustomer) {
-          // 기존 데이터가 있을 경우 (수정)
-          const updatedIndex = updatedRowData.findIndex(
-            (row) => row.custCd === selectedCustomer.custCd
-          );
-          updatedRowData[updatedIndex] = result.data; // 수정된 데이터로 교체
-        } else {
-          // 기존 데이터가 없을 경우 (신규 등록)
-          updatedRowData.push(result.data); // 신규 등록된 데이터 추가
-        }
-
-        setRowData(updatedRowData);
-
         list(); // 테이블 갱신
       }
     } catch (error) {
       console.error("고객사 처리 중 오류 발생:", error);
     }
-  };
-
-  // user-information
-  const [userInformation, setUserInformation] = useState({
-    regionCd: "",
-    calCd: "",
-  });
-
-  const handleUserInformationChange = (field, value) => {
-    console.log("field ::: ", field);
-    console.log("value ::: ", value);
-
-    setFormData((prevUserInformation) => ({
-      ...prevUserInformation,
-      [field]: value,
-    }));
-    console.log("prevUserInformation ::: ", userInformation);
   };
 
   // 종료 버튼 클릭 핸들러
@@ -501,6 +493,39 @@ function Main() {
     event.preventDefault();
 
     console.log("event:::", event);
+  };
+
+  // 우편번호
+  const completeHandler = (data) => {
+    console.log(data);
+
+    setSelectedCustomer({
+      ...selectedCustomer,
+      postNo: data.zonecode,
+      addStd: data.roadAddress,
+    });
+
+    setIsOpen(false);
+  };
+
+  // Modal 스타일
+  const customStyles = {
+    overlay: {
+      backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    content: {
+      left: "0",
+      margin: "auto",
+      width: "500px",
+      height: "600px",
+      padding: "0",
+      overflow: "hidden",
+    },
+  };
+
+  // 검색 클릭
+  const toggle = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
@@ -597,7 +622,9 @@ function Main() {
             <option value="">전체</option>
             {regionCd &&
               regionCd.map((col) => (
-                <option key={col.typeCd}>{col.typeNm}</option>
+                <option value={col.typeCd} key={col.typeCd}>
+                  {col.typeNm}
+                </option>
               ))}
           </select>
         </div>
@@ -611,7 +638,9 @@ function Main() {
             <option value="">전체</option>
             {calCd &&
               calCd.map((col) => (
-                <option key={col.typeCd}>{col.typeNm}</option>
+                <option value={col.typeCd} key={col.typeCd}>
+                  {col.typeNm}
+                </option>
               ))}
           </select>
         </div>
@@ -634,7 +663,9 @@ function Main() {
             <option value="">전체</option>
             {useYn &&
               useYn.map((col) => (
-                <option key={col.typeCd}>{col.typeNm}</option>
+                <option value={col.typeCd} key={col.typeCd}>
+                  {col.typeNm}
+                </option>
               ))}
           </select>
         </div>
@@ -670,8 +701,21 @@ function Main() {
                         <td>{rowIndex + 1}</td>
                         <td>{dataRow.custCd}</td>
                         <td>{dataRow.custNm}</td>
-                        <td>{getRegionText(parseInt(dataRow.regionCd))}</td>
-                        <td>{getCalText(parseInt(dataRow.calCd))}</td>
+
+                        <td>
+                          {regionCd.map((item) => {
+                            return item.typeCd === dataRow.regionCd
+                              ? item.typeNm
+                              : undefined;
+                          })}
+                        </td>
+                        <td>
+                          {calCd.map((item) => {
+                            return item.typeCd === dataRow.calCd
+                              ? item.typeNm
+                              : undefined;
+                          })}
+                        </td>
                         <td>
                           <input
                             type="checkbox"
@@ -717,8 +761,7 @@ function Main() {
             <div className="user-information">
               {
                 <>
-                  <input type="submit" value="저장" />
-                  <div className="user" style={{ marginTop: "2vh" }}>
+                  <div className="user">
                     고객사코드
                     <input
                       type="text"
@@ -741,7 +784,8 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.custNm : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("custNm", e.target.value)}
+                      required //필수입력
                     />
                   </div>
                   <div className="user">
@@ -749,11 +793,11 @@ function Main() {
                     <select
                       className="user-select"
                       name="regionCd"
-                      value={userInformation.regionCd}
-                      onChange={(e) =>
-                        handleUserInformationChange("regionCd", e.target.value)
+                      value={
+                        selectedCustomer ? selectedCustomer.regionCd : undefined
                       }
-                      required
+                      onChange={(e) => handleUpdata("regionCd", e.target.value)}
+                      required //필수입력
                     >
                       {regionCd &&
                         regionCd.map((col) => (
@@ -771,10 +815,8 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.calCd : undefined
                       }
-                      onChange={(e) =>
-                        handleUserInformationChange("calCd", e.target.value)
-                      }
-                      required
+                      onChange={(e) => handleUpdata("calCd", e.target.value)}
+                      required //필수입력
                     >
                       {calCd &&
                         calCd.map((col) => (
@@ -801,6 +843,7 @@ function Main() {
                           name="shipmentYn"
                           type="checkbox"
                           id="shipmentPlanCheckbox"
+                          value={"Y"}
                           checked={
                             selectedCustomer
                               ? selectedCustomer.shipmentYn === "Y"
@@ -808,11 +851,10 @@ function Main() {
                                 : false
                               : false
                           }
-                          onChange={(e) => {
-                            console.log("selectedCustomer", selectedCustomer);
-                            setShipmentPlan(e.target.checked);
-                          }}
-                          // required
+                          onChange={(e) =>
+                            handleUpdata("shipmentYn", e.target.value)
+                          }
+                          required //필수입력
                         />
                         <label htmlFor="shipmentPlanCheckbox">사용</label>
                       </div>
@@ -821,6 +863,7 @@ function Main() {
                           name="shipmentYn"
                           type="checkbox"
                           id="noShipmentPlanCheckbox"
+                          value={"N"}
                           checked={
                             selectedCustomer
                               ? selectedCustomer.shipmentYn === "Y"
@@ -828,28 +871,29 @@ function Main() {
                                 : true
                               : false
                           }
-                          onChange={(e) => setShipmentPlan(!e.target.checked)}
+                          onChange={(e) =>
+                            handleUpdata("shipmentYn", e.target.value)
+                          }
                         />
                         <label htmlFor="noShipmentPlanCheckbox">미사용</label>
                       </div>
                     </div>
                   </div>
-                  <div className="user">
+                  <form className="user">
                     전화번호
                     <input
                       name="telNo"
                       type="tel"
                       placeholder="전화번호 입력 (예: 010-1234-5678)"
-                      // required
                       pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
                       maxLength="13"
                       className="user-input"
                       value={
                         selectedCustomer ? selectedCustomer.telNo : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("telNo", e.target.value)}
                     />
-                  </div>
+                  </form>
                   <div className="user">
                     팩스번호
                     <input
@@ -860,7 +904,7 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.faxNo : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("faxNo", e.target.value)}
                     />
                   </div>
                   <div className="user">
@@ -875,7 +919,7 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.postNo : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("postNo", e.target.value)}
                     />
                     <i
                       className="fa-solid fa-magnifying-glass"
@@ -884,6 +928,7 @@ function Main() {
                         cursor: "pointer",
                         right: "150px",
                       }}
+                      onClick={toggle}
                     ></i>
                   </div>
                   <div className="user">
@@ -896,7 +941,7 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.addStd : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("addStd", e.target.value)}
                     />
                   </div>
                   <div className="user">
@@ -909,7 +954,7 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.addDtl : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("addDtl", e.target.value)}
                     />
                   </div>
                   <div className="user">
@@ -922,7 +967,7 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.manNm : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("manNm", e.target.value)}
                     />
                   </div>
                   <div className="user">
@@ -937,7 +982,7 @@ function Main() {
                       value={
                         selectedCustomer ? selectedCustomer.manTelNo : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) => handleUpdata("manTelNo", e.target.value)}
                     />
                   </div>
                   <div className="user">
@@ -952,9 +997,38 @@ function Main() {
                           ? selectedCustomer.invoiceMail
                           : undefined
                       }
-                      onChange={handleInputChange}
+                      onChange={(e) =>
+                        handleUpdata("invoiceMail", e.target.value)
+                      }
                     />
                   </div>
+
+                  {/* <div>
+                    <input value={zipCode} readOnly placeholder="우편번호" />
+                    <button onClick={toggle}>우편번호 검색</button>
+                    <br />
+                    <input
+                      value={roadAddress}
+                      readOnly
+                      placeholder="도로명 주소"
+                    />
+                    <br /> */}
+                  <Modal
+                    isOpen={isOpen}
+                    ariaHideApp={false}
+                    style={customStyles}
+                  >
+                    <DaumPostcode onComplete={completeHandler} height="100%" />
+                  </Modal>
+                  {/* <input
+                      type="text"
+                      onChange={changeHandler}
+                      value={detailAddress}
+                      placeholder="상세주소"
+                    />
+                    <button onClick={clickHandler}>클릭</button>
+                    <br />
+                  </div> */}
                 </>
               }
             </div>
