@@ -951,11 +951,18 @@ function Main() {
                       name="faxNo"
                       type="tel"
                       placeholder="팩스번호 입력"
+                      maxLength="10"
                       className="user-input"
                       value={
                         selectedCustomer ? selectedCustomer.faxNo : undefined
                       }
-                      onChange={(e) => handleUpdata("faxNo", e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(
+                          /(\d{2})(\d{4})(\d{4})/,
+                          "$1-$2-$3"
+                        );
+                        handleUpdata("faxNo", value);
+                      }}
                     />
                   </div>
                   <div className="user">
@@ -1030,12 +1037,17 @@ function Main() {
                       type="tel"
                       placeholder="담당자 연락처 입력(예: 010-1234-5678)"
                       className="user-input"
-                      pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}"
                       maxLength="13"
                       value={
                         selectedCustomer ? selectedCustomer.manTelNo : undefined
                       }
-                      onChange={(e) => handleUpdata("manTelNo", e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(
+                          /(\d{3})(\d{4})(\d{4})/,
+                          "$1-$2-$3"
+                        );
+                        handleUpdata("manTelNo", value);
+                      }}
                     />
                   </div>
                   <div className="user">
