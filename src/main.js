@@ -389,9 +389,15 @@ function Main() {
 
   // "저장" 버튼 클릭 시 실행되는 함수
   const handleCorrection = async () => {
-    if (!selectedCustomer._isChange) {
-      alert("변경된 내용이 없습니다!");
-      return;
+    if (
+      selectedCustomer.custNm === "" ||
+      selectedCustomer.regionCd === "" ||
+      selectedCustomer.calCd === "" ||
+      selectedCustomer.shipmentYn === ""
+    ) {
+      alert("필수 입력 값(고객사명, 지역, 정산방법, 출하계획)을 입력해주세요");
+    } else {
+      alert("저장되었습니다.");
     }
     try {
       const saveUrl = `${serverUrl}test/api/save/customer`;
@@ -404,6 +410,9 @@ function Main() {
       if (selectedCustomer.custCd) {
         // 기존 데이터가 있을 경우 (수정)
         requestBody = { ...selectedCustomer, saveType: 2 };
+        if (!selectedCustomer._isChange) {
+          alert("수정된 내용이 없습니다!");
+        }
       } else {
         // 기존 데이터가 없을 경우 (신규 등록)
         requestBody = { ...selectedCustomer, saveType: 1 };
